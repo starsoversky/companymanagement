@@ -16,8 +16,8 @@ from django.utils.translation import gettext_lazy as _
 
 class MyUser(AbstractBaseUser, PermissionsMixin):
     USER_TYPE_CHOICES = (
-        ("A", "Company A"),
-        ("B", "Company B"),
+        ("A", "Insurance Agent"),
+        ("B", "Car Repair Company Agent"),
         ("C", "Customer"),
     )
     user_type = models.CharField(max_length=1, choices=USER_TYPE_CHOICES)
@@ -172,6 +172,10 @@ class ServicesProvide(models.Model):
             name=self.name,
         )
 
+    class Meta:
+        verbose_name = "Services provide"
+        verbose_name_plural = "Services provide"
+
 
 class InsuranceCompany(Company):
 
@@ -183,6 +187,10 @@ class InsuranceCompany(Company):
             name=self.name,
         )
 
+    class Meta:
+        verbose_name = "Insurance company"
+        verbose_name_plural = "Insurance company"
+
 
 class CarRepairCompany(Company):
     class Meta:
@@ -192,6 +200,10 @@ class CarRepairCompany(Company):
         return "{name}".format(
             name=self.name,
         )
+
+    class Meta:
+        verbose_name = "Car repair company"
+        verbose_name_plural = "Car repair company"
 
 
 class InsurancePolicy(models.Model):
@@ -344,4 +356,6 @@ class Appointment(models.Model):
     date = models.DateTimeField()
     time = models.TimeField()
 
-    # Other company profile details
+    class Meta:
+        verbose_name = "Appointment"
+        verbose_name_plural = "Appointment"
