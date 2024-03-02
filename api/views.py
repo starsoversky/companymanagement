@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_out
 from knox.auth import TokenAuthentication
 from knox.models import AuthToken
@@ -6,11 +7,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from app.models import UserCustomer
+from core.models import Asset, Case, Competition, CustomerUser
 
-from .serializers import LoginUserSerializer, UserSerializer
+from .serializers import (
+    AssetSerializers,
+    CaseSerializers,
+    CompetitionSerializers,
+    LoginUserSerializer,
+    RegisterSerializer,
+    UserSerializer,
+)
 
-# Create your views here.
+User = get_user_model()
 
 
 # ---------------------------------------------------------------
@@ -38,3 +46,69 @@ class LogoutView(APIView):
             sender=request.user.__class__, request=request, user=request.user
         )
         return Response({"message": "Success"}, status=status.HTTP_200_OK)
+
+
+class RegisterView(generics.CreateAPIView):
+    queryset = CustomerUser.objects.all()
+    permission_classes = (permissions.AllowAny,)
+    serializer_class = RegisterSerializer
+
+
+class AssetListView(generics.ListCreateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = AssetSerializers
+
+    def get_queryset(self):
+        qs = Asset.objects.filter(customer=self.request.user)
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        mutable_data = request.data.copy()
+        mutable_data["customer"] = request.user.id
+        mutable_data["customer_fin"] = request.user.fin_code
+        # if request.user:
+        #     asset_data["customer"] = request.user
+        serializer = self.serializer_class(data=mutable_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CaseListView(generics.ListCreateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = CaseSerializers
+
+    def get_queryset(self):
+        qs = Case.objects.filter(customer=self.request.user)
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        mutable_data = request.data.copy()
+        mutable_data["customer"] = request.user.id
+        # mutable_data["customer_fin"] = request.user.fin_code
+        # if request.user:
+        #     asset_data["customer"] = request.user
+        serializer = self.serializer_class(data=mutable_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CompetitionListView(generics.ListCreateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = CompetitionSerializers
+
+    def get_queryset(self):
+        qs = Competition.objects.filter(customer=self.request.user)
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        mutable_data = request.data.copy()
+        mutable_data["customer"] = request.user.id
+        # mutable_data["customer_fin"] = request.user.fin_code
+        # if request.user:
+        #     asset_data["customer"] = request.user
+        serializer = self.serializer_class(data=mutable_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

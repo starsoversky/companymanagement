@@ -1,16 +1,14 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 
 from .models import *
 
-
-@admin.register(UserCustomer)
-class UserCustomerAdmin(admin.ModelAdmin):
-    pass
+User = get_user_model()
 
 
-@admin.register(UserCompany)
-class UserCompanyAdmin(admin.ModelAdmin):
-    pass
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_filter = ("user_type",)
 
 
 @admin.register(CompanyA)
@@ -45,4 +43,14 @@ class CompetitionAdmin(admin.ModelAdmin):
 
 @admin.register(Meeting)
 class MeetingAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(AgreementDocument)
+class AgreementDocumentAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(CompanyOffer)
+class CompanyOfferAdmin(admin.ModelAdmin):
     pass
