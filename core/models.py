@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import (
     AbstractBaseUser,
-    AbstractUser,
     Group,
     Permission,
     PermissionsMixin,
@@ -41,7 +40,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         _("email address"), max_length=100, unique=True, db_index=True
     )
-    fin_code = models.CharField(max_length=100, blank=True, null=True)
+    fin_code = models.CharField(_("FIN"), max_length=100, blank=True, null=True)
     registration_number = models.CharField(
         max_length=255, unique=True, blank=True, null=True
     )
@@ -120,7 +119,7 @@ class CustomerUser(MyUser):
         )
 
 
-class CompanyAUser(MyUser):
+class InsuranceAgent(MyUser):
 
     class Meta:
         proxy = True
@@ -131,7 +130,7 @@ class CompanyAUser(MyUser):
         )
 
 
-class CompanyBUser(MyUser):
+class CarRepairCompanyAgent(MyUser):
 
     class Meta:
         proxy = True
@@ -140,71 +139,12 @@ class CompanyBUser(MyUser):
         return "{username}".format(
             username=self.username,
         )
-
-
-# class Customer(AbstractUser, PermissionsMixin):
-#     username = models.CharField(
-#         _("username"),
-#         max_length=50,
-#         unique=True,
-#         help_text=_(
-#             "Tələb olunur. 50 simvol və ya az. Hərflər, Rəqəmlər və "
-#             "@/./+/-/_ simvollar."
-#         ),
-#         validators=[
-#             validators.RegexValidator(
-#                 r"^[\w.@+-]+$", _("Düzgün istifadəçi adı daxil edin."), "yanlışdır"
-#             )
-#         ],
-#     )
-#     first_name = models.CharField(_("first name"), max_length=100)
-#     last_name = models.CharField(_("last name"), max_length=100)
-#     email = models.EmailField(
-#         _("email address"), max_length=100, unique=True, db_index=True
-#     )
-#     fin_code = models.CharField(
-#         _("FIN Kod"),
-#         db_index=True,
-#         blank=True,
-#         null=True,
-#         max_length=100,
-#     )
-#     phone_number = models.CharField(max_length=20)
-#     address = models.CharField(max_length=100)
-#     registration_date = models.DateTimeField(
-#         _("date registration"), default=timezone.now
-#     )
-#     groups = models.ManyToManyField(
-#         Group,
-#         verbose_name=_("groups"),
-#         blank=True,
-#         help_text=_(
-#             "The groups this user belongs to. A user will get all permissions "
-#             "granted to each of their groups."
-#         ),
-#         related_name="customer_user_set",
-#         related_query_name="customer_user",
-#     )
-#     user_permissions = models.ManyToManyField(
-#         Permission,
-#         verbose_name=_("user permissions"),
-#         blank=True,
-#         help_text=_("Specific permissions for this user."),
-#         related_name="myuser_set",
-#         related_query_name="myuser",
-#     )
-#     USERNAME_FIELD = "username"
-#     EMAIL_FIELD = "email"
-
-#     class Meta:
-#         verbose_name = "Musteriler"
-#         verbose_name_plural = "Musteriler"
 
 
 class Company(models.Model):
     COMPANY_TYPE_CHOICES = (
-        ("A", "Company A"),
-        ("B", "Company B"),
+        ("A", "Insurance Company"),
+        ("B", "Car Repair Company"),
     )
     type = models.CharField(max_length=1, choices=COMPANY_TYPE_CHOICES)
 
@@ -217,13 +157,23 @@ class Company(models.Model):
     phone_number = models.CharField(max_length=20)
     address = models.CharField(max_length=255)
     email = models.EmailField()
+    # services_offered=
     registration_number = models.CharField(max_length=255, unique=True)
     registration_date = models.DateTimeField(
         _("date registration"), default=timezone.now
     )
 
 
-class CompanyA(Company):
+class ServicesProvide(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return "{name}".format(
+            name=self.name,
+        )
+
+
+class InsuranceCompany(Company):
 
     class Meta:
         proxy = True
@@ -234,7 +184,7 @@ class CompanyA(Company):
         )
 
 
-class CompanyB(Company):
+class CarRepairCompany(Company):
     class Meta:
         proxy = True
 
@@ -244,7 +194,7 @@ class CompanyB(Company):
         )
 
 
-class CompanyDocument(models.Model):
+class InsurancePolicy(models.Model):
     customer = models.ForeignKey(
         CustomerUser,
         related_name="comp_doc",
@@ -252,57 +202,65 @@ class CompanyDocument(models.Model):
         blank=True,
         null=True,
     )
-    company_a = models.ForeignKey(
-        CompanyA, related_name="comp_doc", on_delete=models.CASCADE
+    insurance_company = models.ForeignKey(
+        InsuranceCompany, related_name="insurance_company", on_delete=models.CASCADE
     )
-    company_user = models.ForeignKey(
-        CompanyAUser, related_name="company_user", on_delete=models.CASCADE
+    insurance_agent = models.ForeignKey(
+        InsuranceAgent, related_name="insurance_agent", on_delete=models.CASCADE
     )
     customer_fin = models.CharField(max_length=100)
-    service_plan = models.CharField(max_length=100)
-    service_type = models.CharField(max_length=100)
+    coverage_plan = models.CharField(max_length=100)
+    coverage_type = models.CharField(max_length=100)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+
+    class Meta:
+        verbose_name = "Insurance Policy"
+        verbose_name_plural = "Insurance Policy"
 
 
 class AgreementDocument(models.Model):
-    owner = models.ForeignKey(
-        CompanyB, related_name="ag_owner", on_delete=models.CASCADE
+    insurance_agent = models.ForeignKey(
+        InsuranceCompany, related_name="insurance_agent", on_delete=models.CASCADE
     )
-    company_a = models.ForeignKey(
-        CompanyA, related_name="ag_doc", on_delete=models.CASCADE
+    car_repair_company = models.ForeignKey(
+        CarRepairCompany, related_name="car_repair_company", on_delete=models.CASCADE
     )
-    services_to_provide = models.CharField(max_length=100)
+    services_to_provide = models.ManyToManyField(ServicesProvide)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
 
+    class Meta:
+        verbose_name = "Agreement document"
+        verbose_name_plural = "Agreement document"
 
-class Asset(models.Model):
+
+class Vehicle(models.Model):
     customer = models.ForeignKey(
         CustomerUser,
         on_delete=models.CASCADE,
-        related_name="cust_asset",
+        related_name="cust_vehicle",
         blank=True,
         null=True,
     )
     service_document = models.OneToOneField(
-        CompanyDocument,
+        InsurancePolicy,
         on_delete=models.CASCADE,
         blank=True,
         null=True,
         related_name="serv_doc",
     )
     customer_fin = models.CharField(max_length=100)
-    brand = models.CharField(max_length=100)
+    make = models.CharField(max_length=255)
     model = models.CharField(max_length=100)
     year = models.IntegerField()
     color = models.CharField(max_length=100)
-    category = models.CharField(max_length=255)
-    capacity = models.IntegerField(default=0)
-    power = models.CharField(max_length=100)
-    structure = models.CharField(max_length=100)
-    vin_code = models.CharField(max_length=100, unique=True)
+    type = models.CharField(max_length=255)
+    seating_capacity = models.IntegerField(default=0)
+    engine = models.CharField(max_length=100)
+    body = models.CharField(max_length=100)
     plate_number = models.CharField(max_length=100, unique=True)
+    vin = models.CharField(_("VIN"), max_length=100, unique=True)
 
     def __str__(self):
         return "{brand}".format(
@@ -310,65 +268,77 @@ class Asset(models.Model):
         )
 
     class Meta:
-        verbose_name = "Cihaz"
-        verbose_name_plural = "Cihaz"
+        verbose_name = "Vehicle"
+        verbose_name_plural = "Vehicle"
 
 
-class Case(models.Model):
+class Accident(models.Model):
     customer = models.ForeignKey(
-        CustomerUser, on_delete=models.CASCADE, related_name="case_cust"
+        CustomerUser, on_delete=models.CASCADE, related_name="accident_cust"
     )
     # asset = models.ForeignKey(
     #     Asset, related_name="asset_case", on_delete=models.CASCADE
     # )
     service_document = models.OneToOneField(
-        CompanyDocument,
+        InsurancePolicy,
         on_delete=models.CASCADE,
         blank=True,
         null=True,
-        related_name="case_doc",
+        related_name="accident_doc",
     )
     date = models.DateField()
-    time = models.TimeField()
+    # time = models.TimeField()
     location = models.CharField(max_length=255)
     description = models.TextField()
     photos = models.ImageField(upload_to="uploads/")
-    competition_start_date = models.DateField()
+    accidentbidding_start_date = models.DateField()
+
+    class Meta:
+        verbose_name = "Accident"
+        verbose_name_plural = "Accident"
 
 
-class Competition(models.Model):
-    case = models.ForeignKey(
-        Case, on_delete=models.CASCADE, related_name="competitions"
+class AccidentBidding(models.Model):
+    accident = models.ForeignKey(
+        Accident, on_delete=models.CASCADE, related_name="accident_bidding"
     )
     company = models.ForeignKey(
-        CompanyA, on_delete=models.CASCADE, related_name="comp_company"
+        InsuranceCompany, on_delete=models.CASCADE, related_name="comp_company"
     )
-    submission_date = models.DateTimeField(auto_now_add=True)
-    start_date = models.DateTimeField()
-    estimated_cost = models.DecimalField(max_digits=10, decimal_places=2)
-    restoration_duration = models.DurationField()
-    close_date = models.DateTimeField()
+    # submission_date = models.DateTimeField(auto_now_add=True)
+    # repair_start_date = models.DateTimeField()
+    # estimated_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    # restoration_duration = models.DurationField()
+    # close_date = models.DateTimeField()
     # winner = models.BooleanField()
 
+    class Meta:
+        verbose_name = "Accident bidding"
+        verbose_name_plural = "Accident bidding"
 
-class CompanyOffer(models.Model):
-    offer_owner = models.ForeignKey(CompanyB, on_delete=models.CASCADE)
-    competition = models.ForeignKey(Competition, on_delete=models.CASCADE)
-    services_offered = models.CharField(max_length=255)
+
+class CarInsuranceDocument(models.Model):
+    offer_owner = models.ForeignKey(CarRepairCompany, on_delete=models.CASCADE)
+    accident_bidding = models.ForeignKey(AccidentBidding, on_delete=models.CASCADE)
+    services_to_provide = models.ManyToManyField(ServicesProvide)
     winner = models.BooleanField()
     reject = models.BooleanField()
 
+    class Meta:
+        verbose_name = "Car Insurance Document"
+        verbose_name_plural = "Car Insurance Document"
 
-class Meeting(models.Model):
+
+class Appointment(models.Model):
     STATUS = (
         ("A", "in progress"),
         ("B", "finished"),
         ("C", "scheduled"),
     )
     competation = models.OneToOneField(
-        Case, on_delete=models.CASCADE, related_name="meeting"
+        Accident, on_delete=models.CASCADE, related_name="appointment"
     )
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     customer = models.ForeignKey(CustomerUser, on_delete=models.CASCADE)
     status = models.CharField(max_length=1, choices=STATUS)
     date = models.DateTimeField()

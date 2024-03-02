@@ -1,12 +1,12 @@
 from django.urls import path
 
 from .views import (
-    AssetListView,
-    CaseListView,
-    CompetitionListView,
+    AccidentBiddingListView,
+    AccidentListView,
     LoginView,
     LogoutView,
     RegisterView,
+    VehicleListView,
 )
 
 app_name = "api"
@@ -16,7 +16,7 @@ urlpatterns = [
     # Knox authentication Logout system
     path("logout/", LogoutView.as_view(), name="logout"),
     path("register/", RegisterView.as_view(), name="auth_register"),
-    path("asset/", AssetListView.as_view(), name="asset-list"),
-    path("case/", CaseListView.as_view(), name="case-list"),
-    path("competition/", CompetitionListView.as_view(), name="competition-list"),
+    path("vehicle/", VehicleListView.as_view(), name="vehicle-list"),
+    path("accident/", AccidentListView.as_view(), name="accident-list"),
+    path("acbid/", AccidentBiddingListView.as_view(), name="accident-bidding-list"),
 ]

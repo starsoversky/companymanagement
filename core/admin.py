@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import get_user_model
 
+from .forms import CarInsuranceDocumentAdminForm
 from .models import *
 
 User = get_user_model()
@@ -11,38 +13,38 @@ class UserAdmin(admin.ModelAdmin):
     list_filter = ("user_type",)
 
 
-@admin.register(CompanyA)
-class CompanyAAdmin(admin.ModelAdmin):
+@admin.register(InsuranceCompany)
+class InsuranceCompanyAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(CompanyB)
-class CompanyBAdmin(admin.ModelAdmin):
+@admin.register(CarRepairCompany)
+class CarRepairCompanyAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(CompanyDocument)
-class CompanyDocumentAdmin(admin.ModelAdmin):
+@admin.register(InsurancePolicy)
+class InsurancePolicyAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Asset)
-class AssetAdmin(admin.ModelAdmin):
+@admin.register(Vehicle)
+class VehicleAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Case)
-class CaseAdmin(admin.ModelAdmin):
+@admin.register(Accident)
+class AccidentAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Competition)
-class CompetitionAdmin(admin.ModelAdmin):
+@admin.register(AccidentBidding)
+class AccidentBiddingAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(Meeting)
-class MeetingAdmin(admin.ModelAdmin):
+@admin.register(Appointment)
+class AppointmentAdmin(admin.ModelAdmin):
     pass
 
 
@@ -51,6 +53,11 @@ class AgreementDocumentAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(CompanyOffer)
-class CompanyOfferAdmin(admin.ModelAdmin):
+@admin.register(CarInsuranceDocument)
+class CarInsuranceDocumentAdmin(admin.ModelAdmin):
+    filter_horizontal = ("services_to_provide",)
+
+
+@admin.register(ServicesProvide)
+class ServicesProvideAdmin(admin.ModelAdmin):
     pass

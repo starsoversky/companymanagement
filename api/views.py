@@ -7,15 +7,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.models import Asset, Case, Competition, CustomerUser
+from core.models import Accident, AccidentBidding, CustomerUser, Vehicle
 
 from .serializers import (
-    AssetSerializers,
-    CaseSerializers,
-    CompetitionSerializers,
+    AccidentBiddingSerializers,
+    AccidentSerializers,
     LoginUserSerializer,
     RegisterSerializer,
     UserSerializer,
+    VehicleSerializers,
 )
 
 User = get_user_model()
@@ -54,12 +54,12 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
 
 
-class AssetListView(generics.ListCreateAPIView):
+class VehicleListView(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = AssetSerializers
+    serializer_class = VehicleSerializers
 
     def get_queryset(self):
-        qs = Asset.objects.filter(customer=self.request.user)
+        qs = Vehicle.objects.filter(customer=self.request.user)
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -74,12 +74,12 @@ class AssetListView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CaseListView(generics.ListCreateAPIView):
+class AccidentListView(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = CaseSerializers
+    serializer_class = AccidentSerializers
 
     def get_queryset(self):
-        qs = Case.objects.filter(customer=self.request.user)
+        qs = Accident.objects.filter(customer=self.request.user)
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -94,12 +94,12 @@ class CaseListView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CompetitionListView(generics.ListCreateAPIView):
+class AccidentBiddingListView(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = CompetitionSerializers
+    serializer_class = AccidentBiddingSerializers
 
     def get_queryset(self):
-        qs = Competition.objects.filter(customer=self.request.user)
+        qs = AccidentBidding.objects.filter(customer=self.request.user)
         return qs
 
     def create(self, request, *args, **kwargs):

@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, get_user_model
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from core.models import Asset, Case, Competition, CustomerUser
+from core.models import Accident, AccidentBidding, CustomerUser, Vehicle
 
 User = get_user_model()
 
@@ -82,19 +82,19 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
-class AssetSerializers(serializers.ModelSerializer):
+class VehicleSerializers(serializers.ModelSerializer):
     class Meta:
-        model = Asset
+        model = Vehicle
         fields = "__all__"
 
 
-class CaseSerializers(serializers.ModelSerializer):
+class AccidentSerializers(serializers.ModelSerializer):
     class Meta:
-        model = Case
+        model = Accident
         fields = "__all__"
 
 
-class CompetitionSerializers(serializers.ModelSerializer):
+class AccidentBiddingSerializers(serializers.ModelSerializer):
     class Meta:
-        model = Competition
+        model = AccidentBidding
         fields = "__all__"
