@@ -18,6 +18,10 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    # Django JET URLS
+    path("jet/", include("jet.urls", "jet")),
+    # Django JET dashboard URLS
+    path("jet/dashboard/", include("jet.dashboard.urls", "jet-dashboard")),
     path("admin/", admin.site.urls),
     path("api/", include("api.urls", "api")),
 ]
