@@ -27,6 +27,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "fin_code",
+            "address",
+            "phone_number",
         )
         extra_kwargs = {
             "first_name": {"required": True},
