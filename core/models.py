@@ -280,7 +280,7 @@ class Vehicle(models.Model):
 
     def __str__(self):
         return "{brand}".format(
-            brand=self.brand,
+            make=self.make,
         )
 
     class Meta:
