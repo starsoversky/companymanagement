@@ -51,6 +51,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             first_name=validated_data["first_name"],
             last_name=validated_data["last_name"],
             fin_code=validated_data["fin_code"],
+            address=validated_data["address"],
+            phone_number=validated_data["phone_number"],
             is_active=False,
         )
 
