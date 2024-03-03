@@ -259,7 +259,7 @@ class Vehicle(models.Model):
         blank=True,
         null=True,
     )
-    service_document = models.OneToOneField(
+    insurance_policy = models.OneToOneField(
         InsurancePolicy,
         on_delete=models.CASCADE,
         blank=True,
@@ -279,7 +279,7 @@ class Vehicle(models.Model):
     vin = models.CharField(_("VIN"), max_length=100, unique=True)
 
     def __str__(self):
-        return "{brand}".format(
+        return "{make}".format(
             make=self.make,
         )
 
@@ -302,7 +302,7 @@ class Accident(models.Model):
         null=True,
         related_name="accident_doc",
     )
-    date = models.DateField()
+    accident_date = models.DateField()
     accident_time = models.TimeField()
     location = models.CharField(max_length=255)
     description = models.TextField()
