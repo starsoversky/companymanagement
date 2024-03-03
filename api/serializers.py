@@ -87,7 +87,19 @@ class UserSerializer(serializers.ModelSerializer):
 class VehicleSerializers(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
-        fields = "__all__"
+        fields = (
+            "insurance_policy",
+            "make",
+            "model",
+            "year",
+            "color",
+            "type",
+            "seating_capacity",
+            "engine",
+            "body",
+            "plate_number",
+            "vin",
+        )
 
 
 class AccidentSerializers(serializers.ModelSerializer):

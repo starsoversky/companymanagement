@@ -70,6 +70,7 @@ class VehicleListView(generics.ListCreateAPIView):
         #     asset_data["customer"] = request.user
         serializer = self.serializer_class(data=mutable_data)
         serializer.is_valid(raise_exception=True)
+
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

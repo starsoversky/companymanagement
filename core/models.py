@@ -272,7 +272,9 @@ class Vehicle(models.Model):
         null=True,
         related_name="serv_doc",
     )
-    customer_fin = models.CharField(_("Customer FIN"), max_length=100)
+    customer_fin = models.CharField(
+        _("Customer FIN"), max_length=100, blank=True, null=True
+    )
     make = models.CharField(max_length=255)
     model = models.CharField(max_length=100)
     year = models.IntegerField()
