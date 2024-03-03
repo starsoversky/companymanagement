@@ -307,7 +307,7 @@ class Accident(models.Model):
     location = models.CharField(max_length=255)
     description = models.TextField()
     photos = models.ImageField(upload_to="uploads/")
-    accidentbidding_start_date = models.DateField()
+    accidentbidding_start_date = models.DateField(_("Accident bidding start date"))
 
     class Meta:
         verbose_name = "Accident"
