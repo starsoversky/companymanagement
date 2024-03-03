@@ -40,7 +40,13 @@ class AccidentAdmin(admin.ModelAdmin):
 
 @admin.register(AccidentBidding)
 class AccidentBiddingAdmin(admin.ModelAdmin):
-    pass
+    readonly_fields = ("accepted_offers",)
+
+    def accepted_offers(self, obj):
+        if obj:
+            return obj.repair_offer.filter(accepted_offer=True)
+        else:
+            return ""
 
 
 @admin.register(Appointment)
@@ -53,8 +59,8 @@ class AgreementDocumentAdmin(admin.ModelAdmin):
     pass
 
 
-@admin.register(CarInsuranceDocument)
-class CarInsuranceDocumentAdmin(admin.ModelAdmin):
+@admin.register(CarRepairCompanyOffer)
+class CarRepairCompanyOfferAdmin(admin.ModelAdmin):
     filter_horizontal = ("services_to_provide",)
 
 

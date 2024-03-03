@@ -160,7 +160,7 @@ class Company(models.Model):
     # services_offered=
     registration_number = models.CharField(max_length=255, unique=True)
     registration_date = models.DateTimeField(
-        _("date registration"), default=timezone.now
+        _("Registration date"), default=timezone.now
     )
 
     class Meta:
@@ -236,11 +236,17 @@ class InsurancePolicy(models.Model):
 
 
 class AgreementDocument(models.Model):
+    insurance_company = models.ForeignKey(
+        InsuranceCompany, related_name="agin_company", on_delete=models.CASCADE
+    )
     insurance_agent = models.ForeignKey(
-        InsuranceCompany, related_name="insurance_agent", on_delete=models.CASCADE
+        InsuranceAgent, related_name="agin_agent", on_delete=models.CASCADE
     )
     car_repair_company = models.ForeignKey(
-        CarRepairCompany, related_name="car_repair_company", on_delete=models.CASCADE
+        CarRepairCompany, related_name="car_rep_company", on_delete=models.CASCADE
+    )
+    car_repair_agent = models.ForeignKey(
+        CarRepairCompanyAgent, related_name="car_rep_agent", on_delete=models.CASCADE
     )
     services_to_provide = models.ManyToManyField(OfferedServices)
     start_date = models.DateTimeField()
@@ -295,7 +301,7 @@ class Accident(models.Model):
     # asset = models.ForeignKey(
     #     Asset, related_name="asset_case", on_delete=models.CASCADE
     # )
-    service_document = models.OneToOneField(
+    insurance_policy = models.OneToOneField(
         InsurancePolicy,
         on_delete=models.CASCADE,
         blank=True,
@@ -314,7 +320,7 @@ class Accident(models.Model):
 
 
 class AccidentBidding(models.Model):
-    accident = models.ForeignKey(
+    accident = models.OneToOneField(
         Accident, on_delete=models.CASCADE, related_name="accident_bidding"
     )
     company = models.ForeignKey(
@@ -333,16 +339,21 @@ class AccidentBidding(models.Model):
         verbose_name_plural = "Accident Bidding"
 
 
-class CarInsuranceDocument(models.Model):
+class CarRepairCompanyOffer(models.Model):
     offer_owner = models.ForeignKey(CarRepairCompany, on_delete=models.CASCADE)
-    accident_bidding = models.ForeignKey(AccidentBidding, on_delete=models.CASCADE)
+    accident_bidding = models.ForeignKey(
+        AccidentBidding, on_delete=models.CASCADE, related_name="repair_offer"
+    )
     services_to_provide = models.ManyToManyField(OfferedServices)
-    winner = models.BooleanField()
-    reject = models.BooleanField()
+    repair_start_date = models.DateTimeField()
+    approximate_budget = models.PositiveBigIntegerField()
+    approximate_duration = models.DurationField()
+    accepted_offer = models.BooleanField()
+    rejected_offer = models.BooleanField()
 
     class Meta:
-        verbose_name = "Car Insurance Document"
-        verbose_name_plural = "Car Insurance Document"
+        verbose_name = "Car Repair Company Offer"
+        verbose_name_plural = "Car Repair Company Offer"
 
 
 class Appointment(models.Model):
@@ -351,14 +362,15 @@ class Appointment(models.Model):
         ("B", "finished"),
         ("C", "scheduled"),
     )
-    accidentbidding = models.OneToOneField(
-        AccidentBidding, on_delete=models.CASCADE, related_name="appointment"
+    accident_bidding = models.OneToOneField(
+        AccidentBidding,
+        on_delete=models.CASCADE,
+        related_name="appointment",
     )
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     customer = models.ForeignKey(CustomerUser, on_delete=models.CASCADE)
     status = models.CharField(max_length=1, choices=STATUS)
     date = models.DateTimeField()
-    time = models.TimeField()
 
     class Meta:
         verbose_name = "Appointment"
