@@ -253,8 +253,8 @@ class AgreementDocument(models.Model):
     end_date = models.DateTimeField()
 
     class Meta:
-        verbose_name = "Agreement Document"
-        verbose_name_plural = "Agreement Document"
+        verbose_name = "Insurance & Car Companies Agreement Document "
+        verbose_name_plural = "Insurance & Car Companies Agreement Document "
 
 
 class Vehicle(models.Model):
@@ -323,8 +323,15 @@ class AccidentBidding(models.Model):
     accident = models.OneToOneField(
         Accident, on_delete=models.CASCADE, related_name="accident_bidding"
     )
-    company = models.ForeignKey(
-        InsuranceCompany, on_delete=models.CASCADE, related_name="comp_company"
+    insurance_company = models.ForeignKey(
+        InsuranceCompany,
+        on_delete=models.CASCADE,
+        related_name="acc_comp",
+    )
+    insurance_company_agent = models.ForeignKey(
+        InsuranceAgent,
+        on_delete=models.CASCADE,
+        related_name="acc_compag",
     )
     start_date = models.DateField(_("Accident bidding start date"))
     # submission_date = models.DateTimeField(auto_now_add=True)
