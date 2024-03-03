@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import get_user_model
 
-from .forms import CarInsuranceDocumentAdminForm
+# from .forms import CarInsuranceDocumentAdminForm
 from .models import *
 
 User = get_user_model()
@@ -58,6 +58,6 @@ class CarInsuranceDocumentAdmin(admin.ModelAdmin):
     filter_horizontal = ("services_to_provide",)
 
 
-@admin.register(ServicesProvide)
-class ServicesProvideAdmin(admin.ModelAdmin):
+@admin.register(OfferedServices)
+class OfferedServicesAdmin(admin.ModelAdmin):
     pass

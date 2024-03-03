@@ -99,8 +99,8 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     EMAIL_FIELD = "email"
 
     class Meta:
-        verbose_name = "İstifadəçilər"
-        verbose_name_plural = "İstifadəçilər"
+        verbose_name = "User"
+        verbose_name_plural = "User"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -163,8 +163,12 @@ class Company(models.Model):
         _("date registration"), default=timezone.now
     )
 
+    class Meta:
+        verbose_name = "Company"
+        verbose_name_plural = "Company"
 
-class ServicesProvide(models.Model):
+
+class OfferedServices(models.Model):
     name = models.CharField(max_length=255)
 
     def __str__(self):
@@ -173,8 +177,8 @@ class ServicesProvide(models.Model):
         )
 
     class Meta:
-        verbose_name = "Services provide"
-        verbose_name_plural = "Services provide"
+        verbose_name = "Offered Services"
+        verbose_name_plural = "Offered Services"
 
 
 class InsuranceCompany(Company):
@@ -188,8 +192,8 @@ class InsuranceCompany(Company):
         )
 
     class Meta:
-        verbose_name = "Insurance company"
-        verbose_name_plural = "Insurance company"
+        verbose_name = "Insurance Company"
+        verbose_name_plural = "Insurance Company"
 
 
 class CarRepairCompany(Company):
@@ -202,8 +206,8 @@ class CarRepairCompany(Company):
         )
 
     class Meta:
-        verbose_name = "Car repair company"
-        verbose_name_plural = "Car repair company"
+        verbose_name = "Car Repair Company"
+        verbose_name_plural = "Car Repair Company"
 
 
 class InsurancePolicy(models.Model):
@@ -220,7 +224,7 @@ class InsurancePolicy(models.Model):
     insurance_agent = models.ForeignKey(
         InsuranceAgent, related_name="insurance_agent", on_delete=models.CASCADE
     )
-    customer_fin = models.CharField(max_length=100)
+    customer_fin = models.CharField(_("Customer FIN"), max_length=100)
     coverage_plan = models.CharField(max_length=100)
     coverage_type = models.CharField(max_length=100)
     start_date = models.DateTimeField()
@@ -238,13 +242,13 @@ class AgreementDocument(models.Model):
     car_repair_company = models.ForeignKey(
         CarRepairCompany, related_name="car_repair_company", on_delete=models.CASCADE
     )
-    services_to_provide = models.ManyToManyField(ServicesProvide)
+    services_to_provide = models.ManyToManyField(OfferedServices)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
 
     class Meta:
-        verbose_name = "Agreement document"
-        verbose_name_plural = "Agreement document"
+        verbose_name = "Agreement Document"
+        verbose_name_plural = "Agreement Document"
 
 
 class Vehicle(models.Model):
@@ -262,7 +266,7 @@ class Vehicle(models.Model):
         null=True,
         related_name="serv_doc",
     )
-    customer_fin = models.CharField(max_length=100)
+    customer_fin = models.CharField(_("Customer FIN"), max_length=100)
     make = models.CharField(max_length=255)
     model = models.CharField(max_length=100)
     year = models.IntegerField()
@@ -299,7 +303,7 @@ class Accident(models.Model):
         related_name="accident_doc",
     )
     date = models.DateField()
-    # time = models.TimeField()
+    time = models.TimeField()
     location = models.CharField(max_length=255)
     description = models.TextField()
     photos = models.ImageField(upload_to="uploads/")
@@ -325,14 +329,14 @@ class AccidentBidding(models.Model):
     # winner = models.BooleanField()
 
     class Meta:
-        verbose_name = "Accident bidding"
-        verbose_name_plural = "Accident bidding"
+        verbose_name = "Accident Bidding"
+        verbose_name_plural = "Accident Bidding"
 
 
 class CarInsuranceDocument(models.Model):
     offer_owner = models.ForeignKey(CarRepairCompany, on_delete=models.CASCADE)
     accident_bidding = models.ForeignKey(AccidentBidding, on_delete=models.CASCADE)
-    services_to_provide = models.ManyToManyField(ServicesProvide)
+    services_to_provide = models.ManyToManyField(OfferedServices)
     winner = models.BooleanField()
     reject = models.BooleanField()
 
@@ -347,8 +351,8 @@ class Appointment(models.Model):
         ("B", "finished"),
         ("C", "scheduled"),
     )
-    competation = models.OneToOneField(
-        Accident, on_delete=models.CASCADE, related_name="appointment"
+    accidentbidding = models.OneToOneField(
+        AccidentBidding, on_delete=models.CASCADE, related_name="appointment"
     )
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
     customer = models.ForeignKey(CustomerUser, on_delete=models.CASCADE)
