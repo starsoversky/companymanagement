@@ -307,7 +307,6 @@ class Accident(models.Model):
     location = models.CharField(max_length=255)
     description = models.TextField()
     photos = models.ImageField(upload_to="uploads/")
-    accidentbidding_start_date = models.DateField(_("Accident bidding start date"))
 
     class Meta:
         verbose_name = "Accident"
@@ -321,6 +320,7 @@ class AccidentBidding(models.Model):
     company = models.ForeignKey(
         InsuranceCompany, on_delete=models.CASCADE, related_name="comp_company"
     )
+    start_date = models.DateField(_("Accident bidding start date"))
     # submission_date = models.DateTimeField(auto_now_add=True)
     # repair_start_date = models.DateTimeField()
     # estimated_cost = models.DecimalField(max_digits=10, decimal_places=2)
