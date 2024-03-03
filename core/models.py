@@ -303,7 +303,7 @@ class Accident(models.Model):
         related_name="accident_doc",
     )
     date = models.DateField()
-    time = models.TimeField()
+    accident_time = models.TimeField()
     location = models.CharField(max_length=255)
     description = models.TextField()
     photos = models.ImageField(upload_to="uploads/")
