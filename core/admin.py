@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin
 
 # from .forms import CarInsuranceDocumentAdminForm
 from .models import *
@@ -9,8 +10,40 @@ User = get_user_model()
 
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_filter = ("user_type",)
+class MyUserAdmin(admin.ModelAdmin):
+    readonly_fields = ("company",)
+    # fieldsets = (
+    #     (None, {"fields": ("email", "password")}),
+    #     (
+    #         "Personal Info",
+    #         {"fields": ("first_name", "last_name", "address", "phone_number")},
+    #     ),
+    #     (
+    #         "Permissions",
+    #         {
+    #             "fields": (
+    #                 "is_active",
+    #                 "is_staff",
+    #                 "is_blocked",
+    #                 "is_admin",
+    #                 "groups",
+    #                 "user_permissions",
+    #             )
+    #         },
+    #     ),
+    #     ("Important dates", {"fields": ("last_login", "date_joined")}),
+    # )
+    # add_fieldsets = (
+    #     (
+    #         None,
+    #         {
+    #             "classes": ("wide",),
+    #             "fields": ("email", "password1", "password2"),
+    #         },
+    #     ),
+    # )
+    # search_fields = ("email", "first_name", "last_name")
+    # ordering = ("email",)
 
 
 @admin.register(InsuranceCompany)
@@ -20,7 +53,7 @@ class InsuranceCompanyAdmin(admin.ModelAdmin):
 
 @admin.register(CarRepairCompany)
 class CarRepairCompanyAdmin(admin.ModelAdmin):
-    pass
+    readonly_fields = ("registration_date",)
 
 
 @admin.register(InsurancePolicy)
@@ -44,7 +77,7 @@ class AccidentBiddingAdmin(admin.ModelAdmin):
 
     def accepted_offers(self, obj):
         if obj:
-            return obj.repair_offer.filter(accepted_offer=True)
+            return obj.repair_offer.filter(accepted_offer=True).first()
         else:
             return ""
 

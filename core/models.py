@@ -16,11 +16,19 @@ from django.utils.translation import gettext_lazy as _
 
 class MyUser(AbstractBaseUser, PermissionsMixin):
     USER_TYPE_CHOICES = (
-        ("A", "Insurance Agent"),
-        ("B", "Car Repair Company Agent"),
-        ("C", "Customer"),
+        ("1", "Customer"),
+        ("2", "Car Repair Company Agent"),
+        ("3", "Insurance Agent"),
     )
     user_type = models.CharField(max_length=1, choices=USER_TYPE_CHOICES)
+    company = models.ForeignKey(
+        "Company",
+        on_delete=models.CASCADE,
+        verbose_name=_("company"),
+        related_name="company_user",
+        blank=True,
+        null=True,
+    )
     username = models.CharField(
         _("username"),
         max_length=50,
@@ -38,9 +46,9 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(_("first name"), max_length=100)
     last_name = models.CharField(_("last name"), max_length=100)
     email = models.EmailField(
-        _("email address"), max_length=100, unique=True, db_index=True
+        _("email address"), max_length=255, unique=True, db_index=True
     )
-    fin_code = models.CharField(_("FIN"), max_length=100, blank=True, null=True)
+    fin_code = models.CharField(_("FIN"), max_length=100)
     registration_number = models.CharField(
         max_length=255, unique=True, blank=True, null=True
     )
@@ -95,8 +103,9 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     )
     objects = UserManager()
 
-    USERNAME_FIELD = "username"
     EMAIL_FIELD = "email"
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
 
     class Meta:
         verbose_name = "User"
@@ -106,6 +115,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         super().__init__(*args, **kwargs)
         # cache current state of instance
         self.cache_is_active = self.is_active
+        self.cache_is_staff = self.is_staff
 
 
 class CustomerUser(MyUser):
@@ -160,8 +170,13 @@ class Company(models.Model):
     # services_offered=
     registration_number = models.CharField(max_length=255, unique=True)
     registration_date = models.DateTimeField(
-        _("Registration date"), default=timezone.now
+        _("Registration date"), auto_now_add=True, db_index=True
     )
+
+    def __str__(self):
+        return "{name}".format(
+            name=self.name,
+        )
 
     class Meta:
         verbose_name = "Company"
@@ -316,6 +331,11 @@ class Accident(models.Model):
     description = models.TextField()
     photos = models.ImageField(upload_to="uploads/")
 
+    def __str__(self):
+        return "{customer}".format(
+            customer=self.customer,
+        )
+
     class Meta:
         verbose_name = "Accident"
         verbose_name_plural = "Accident"
@@ -336,12 +356,17 @@ class AccidentBidding(models.Model):
         related_name="acc_compag",
     )
     start_date = models.DateField(_("Accident bidding start date"))
+
     # submission_date = models.DateTimeField(auto_now_add=True)
     # repair_start_date = models.DateTimeField()
     # estimated_cost = models.DecimalField(max_digits=10, decimal_places=2)
     # restoration_duration = models.DurationField()
     # close_date = models.DateTimeField()
     # winner = models.BooleanField()
+    def __str__(self):
+        return "{accident}".format(
+            accident=self.accident,
+        )
 
     class Meta:
         verbose_name = "Accident Bidding"
@@ -350,6 +375,9 @@ class AccidentBidding(models.Model):
 
 class CarRepairCompanyOffer(models.Model):
     offer_owner = models.ForeignKey(CarRepairCompany, on_delete=models.CASCADE)
+    offer_owner_agent = models.ForeignKey(
+        CarRepairCompanyAgent, on_delete=models.CASCADE
+    )
     accident_bidding = models.ForeignKey(
         AccidentBidding, on_delete=models.CASCADE, related_name="repair_offer"
     )
@@ -359,6 +387,11 @@ class CarRepairCompanyOffer(models.Model):
     approximate_duration = models.DurationField()
     accepted_offer = models.BooleanField()
     rejected_offer = models.BooleanField()
+
+    def __str__(self):
+        return "{offer_owner}".format(
+            offer_owner=self.offer_owner,
+        )
 
     class Meta:
         verbose_name = "Car Repair Company Offer"

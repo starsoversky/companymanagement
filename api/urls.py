@@ -1,10 +1,11 @@
 from django.urls import path
 
 from .views import (
-    AccidentBiddingListView,
+    AccidentBiddingApiView,
     AccidentListView,
     LoginView,
     LogoutView,
+    OfferListView,
     RegisterView,
     VehicleListView,
 )
@@ -18,5 +19,8 @@ urlpatterns = [
     path("register/", RegisterView.as_view(), name="auth_register"),
     path("vehicle/", VehicleListView.as_view(), name="vehicle-list"),
     path("accident/", AccidentListView.as_view(), name="accident-list"),
-    path("acbid/", AccidentBiddingListView.as_view(), name="accident-bidding-list"),
+    path(
+        "accbiddlist/", AccidentBiddingApiView.as_view(), name="accident-bidding-list"
+    ),
+    path("offer/", OfferListView.as_view(), name="accident-list"),
 ]
