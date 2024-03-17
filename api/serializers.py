@@ -94,6 +94,7 @@ class CustomerRegisterSerializer(RegisterBaseSerializer):
             "first_name",
             "last_name",
             "password",
+            "fin_code",
             "address",
             "phone_number",
             "user_type",
