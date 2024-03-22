@@ -20,7 +20,19 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         ("2", "Car Repair Company Agent"),
         ("3", "Insurance Agent"),
     )
-    user_type = models.CharField(max_length=1, choices=USER_TYPE_CHOICES)
+    PHONEPREFIX = (
+        ("1", "050"),
+        ("2", "051"),
+        ("3", "077"),
+        ("3", "070"),
+        ("3", "055"),
+        ("3", "010"),
+        ("3", "099"),
+        ("3", "060"),
+    )
+    user_type = models.CharField(
+        max_length=1, choices=USER_TYPE_CHOICES, null=True, blank=True
+    )
     company = models.ForeignKey(
         "Company",
         on_delete=models.CASCADE,
@@ -48,11 +60,12 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         _("email address"), max_length=255, unique=True, db_index=True
     )
-    fin_code = models.CharField(_("FIN"), max_length=100)
+    fin_code = models.CharField(_("FIN"), max_length=100, unique=True)
     registration_number = models.CharField(
         max_length=255, unique=True, blank=True, null=True
     )
     address = models.CharField(max_length=100)
+    phone_prefix = models.CharField(choices=PHONEPREFIX, max_length=3)
     phone_number = models.CharField(max_length=20)
     is_staff = models.BooleanField(
         _("staff status"),
@@ -82,25 +95,6 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     )
 
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
-    groups = models.ManyToManyField(
-        Group,
-        verbose_name=_("groups"),
-        blank=True,
-        help_text=_(
-            "The groups this user belongs to. A user will get all permissions "
-            "granted to each of their groups."
-        ),
-        related_name="company_user_set",
-        related_query_name="myuser",
-    )
-    user_permissions = models.ManyToManyField(
-        Permission,
-        verbose_name=_("user permissions"),
-        blank=True,
-        help_text=_("Specific permissions for this user."),
-        related_name="company_user_set",
-        related_query_name="myuser",
-    )
     objects = UserManager()
 
     EMAIL_FIELD = "email"
@@ -245,6 +239,11 @@ class InsurancePolicy(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
 
+    def __str__(self):
+        return "{customerfin}-{company}".format(
+            customerfin=self.customer_fin, company=self.insurance_company
+        )
+
     class Meta:
         verbose_name = "Insurance Policy"
         verbose_name_plural = "Insurance Policy"
@@ -302,8 +301,8 @@ class Vehicle(models.Model):
     vin = models.CharField(_("VIN"), max_length=100, unique=True)
 
     def __str__(self):
-        return "{make}".format(
-            make=self.make,
+        return "{customer_fin}".format(
+            customer_fin=self.customer_fin,
         )
 
     class Meta:
@@ -321,8 +320,6 @@ class Accident(models.Model):
     insurance_policy = models.OneToOneField(
         InsurancePolicy,
         on_delete=models.CASCADE,
-        blank=True,
-        null=True,
         related_name="accident_doc",
     )
     accident_date = models.DateField()
@@ -383,7 +380,7 @@ class CarRepairCompanyOffer(models.Model):
     )
     services_to_provide = models.ManyToManyField(OfferedServices)
     repair_start_date = models.DateTimeField()
-    approximate_budget = models.PositiveBigIntegerField()
+    approximate_budget = models.PositiveIntegerField()
     approximate_duration = models.DurationField()
     accepted_offer = models.BooleanField()
     rejected_offer = models.BooleanField()

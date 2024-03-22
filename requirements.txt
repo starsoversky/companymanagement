@@ -4,9 +4,11 @@ black==24.2.0
 cffi==1.16.0
 click==8.1.7
 cryptography==42.0.4
-Django==4.2.10
+Django==3.0
+django-3-jet==1.0.8
 django-4-jet==1.0.9
 django-filter==23.5
+django-jet==1.0.8
 django-rest-knox==4.2.0
 djangorestframework==3.14.0
 importlib-metadata==7.0.1

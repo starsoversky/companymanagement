@@ -100,11 +100,9 @@ class VehicleListView(generics.ListCreateAPIView):
         return qs
 
     def create(self, request, *args, **kwargs):
-        mutable_data = request.data.copy()
+        mutable_data = request.data.copy()  # Make a mutable copy of request.data
         mutable_data["customer"] = request.user.id
         mutable_data["customer_fin"] = request.user.fin_code
-        # if request.user:
-        #     asset_data["customer"] = request.user
         serializer = self.serializer_class(data=mutable_data)
         serializer.is_valid(raise_exception=True)
 
@@ -121,11 +119,8 @@ class AccidentListView(generics.ListCreateAPIView):
         return qs
 
     def create(self, request, *args, **kwargs):
-        mutable_data = request.data.copy()
+        mutable_data = request.data.copy()  # Make a mutable copy of request.data
         mutable_data["customer"] = request.user.id
-        # mutable_data["customer_fin"] = request.user.fin_code
-        # if request.user:
-        #     asset_data["customer"] = request.user
         serializer = self.serializer_class(data=mutable_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
