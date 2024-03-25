@@ -365,6 +365,7 @@ class AccidentBidding(models.Model):
         on_delete=models.CASCADE,
         related_name="acc_compag",
     )
+    services_to_provide = models.ManyToManyField(OfferedServices)
     start_date = models.DateField(_("Accident bidding start date"))
 
     def __str__(self):
