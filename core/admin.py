@@ -4,7 +4,10 @@ from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
+
+from core.admin_filter import AccidentBiddingFilter
 
 from .forms import MyUserChangeForm
 
@@ -63,13 +66,19 @@ class MyUserAdmin(UserAdmin):
                     "username",
                     "password1",
                     "password2",
+                    "email",
+                    "fin_code",
+                    "registration_number",
+                    "address",
+                    "phone_prefix",
+                    "phone_number",
                 ),
             },
         ),
     )
     form = MyUserChangeForm
     list_display = ("username", "is_staff", "user_type")
-    list_filter = ("is_staff", "is_superuser", "is_active", "groups")
+    list_filter = ("is_staff", "is_superuser", "is_active", "groups", "user_type")
     ordering = ("-date_joined",)
     filter_horizontal = (
         "groups",
@@ -79,19 +88,18 @@ class MyUserAdmin(UserAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         if request.user.is_staff and not request.user.is_superuser:
-            queryset = queryset.filter(
-                user_type="1",
-            )
             if request.user.user_type == "3":  # Assuming '3' represents Insurance Agent
                 # Get the insurance policies associated with the Insurance Agent's company
                 insurance_policies = InsurancePolicy.objects.filter(
                     insurance_company=request.user.company
                 )
                 # Get the Customer users associated with these insurance policies
-                customer_users = User.objects.filter(
-                    user_type="1", comp_doc__in=insurance_policies
+                queryset = User.objects.filter(
+                    Q(user_type="1", comp_doc__in=insurance_policies)
+                    | Q(company=request.user.company)
                 )
-            return customer_users.distinct()
+
+            return queryset.distinct()
         return queryset
 
     def save_model(self, request, obj, form, change):
@@ -150,17 +158,73 @@ class VehicleAdmin(admin.ModelAdmin):
                 kwargs["queryset"] = CustomerUser.objects.filter(
                     user_type=1, is_active=True
                 )
+            if db_field.name == "insurance_policy":
+                # Customize the queryset here
+                kwargs["queryset"] = InsurancePolicy.objects.filter(
+                    insurance_company=request.user.company
+                )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class AccidentPhotoInline(admin.TabularInline):
+    model = AccidentPhoto
 
 
 @admin.register(Accident)
 class AccidentAdmin(admin.ModelAdmin):
-    pass
+    inlines = [AccidentPhotoInline]
+    list_display = ("customer", "insurance_policy", "accident_date")
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if not request.user.is_superuser:
+            queryset = Accident.objects.filter(
+                insurance_policy__insurance_company=request.user.company
+            )
+        return queryset
+
+
+class AccidentBiddingPhotoInline(admin.TabularInline):
+    model = AccidentBiddingPhoto
 
 
 @admin.register(AccidentBidding)
 class AccidentBiddingAdmin(admin.ModelAdmin):
-    readonly_fields = ("accepted_offers",)
+    inlines = [AccidentBiddingPhotoInline]
+    readonly_fields = [
+        "accepted_offers",
+        "insurance_company_agent",
+        "insurance_company",
+    ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if request.user.is_staff and not request.user.is_superuser:
+            if request.user.user_type == "3":  # Assuming '3' represents Insurance Agent
+                queryset = queryset.filter(insurance_company=request.user.company)
+            return queryset.distinct()
+        return queryset
+
+    def save_model(self, request, obj, form, change):
+        if obj and not request.user.is_superuser:
+            obj.insurance_company_agent = request.user
+            if request.user.company:
+                obj.insurance_company_id = request.user.company.id
+        super().save_model(request, obj, form, change)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if not request.user.is_superuser:
+            if db_field.name == "accident":
+                # Customize the queryset here
+                kwargs["queryset"] = Accident.objects.filter(
+                    insurance_policy__insurance_company=request.user.company
+                )
+            # if db_field.name == "insurance_company":
+            #     # Customize the queryset here
+            #     kwargs["queryset"] = InsuranceCompany.objects.filter(
+            #         id=request.user.company.id
+            #     )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def accepted_offers(self, obj):
         if obj:
@@ -176,12 +240,58 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 @admin.register(AgreementDocument)
 class AgreementDocumentAdmin(admin.ModelAdmin):
-    pass
+    readonly_fields = ("insurance_company", "insurance_agent")
+
+    def save_model(self, request, obj, form, change):
+        if obj:
+            obj.insurance_agent = request.user
+            if request.user.company:
+                obj.insurance_company_id = request.user.company.id
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(CarRepairCompanyOffer)
 class CarRepairCompanyOfferAdmin(admin.ModelAdmin):
-    filter_horizontal = ("services_to_provide",)
+    list_display = ("offer_owner", "offer_owner_agent", "accident_bidding")
+    list_filter = (
+        # AccidentBiddingFilter,
+        "offer_owner__name",
+        "offer_owner_agent",
+        "accepted_offer",
+        "rejected_offer",
+        "accident_bidding__accident",
+    )
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if request.user.is_staff and not request.user.is_superuser:
+            if request.user.user_type == "3":  # Assuming '3' represents Insurance Agent
+                # Get the insurance policies associated with the Insurance Agent's company
+                insurance_policies = InsurancePolicy.objects.filter(
+                    insurance_company=request.user.company
+                )
+                # Get the Customer users associated with these insurance policies
+                queryset = CarRepairCompanyOffer.objects.filter(
+                    accident_bidding__insurance_company=request.user.company
+                )
+
+            return queryset.distinct()
+        return queryset
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly = list(super().get_readonly_fields(request, obj=obj))
+        if not request.user.is_superuser:
+            readonly += [
+                "offer_owner",
+                "offer_owner_agent",
+                "accident_bidding",
+                "services_to_provide",
+                "repair_start_date",
+                "repair_start_date",
+                "approximate_budget",
+                "approximate_duration",
+            ]
+        return readonly
 
 
 @admin.register(OfferedServices)

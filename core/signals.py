@@ -8,19 +8,24 @@ from core.models import Company, InsurancePolicy, MyUser, Vehicle
 def add_doc_vehicle(sender, instance, created, **kwargs):
     if not instance.cache_is_active and instance.is_active:
         if instance.user_type == "1":
-            InsurancePolicy.objects.filter(customer_fin=instance.fin_code).update(
+            InsurancePolicy.objects.filter(
+                customer_fin__iexact=instance.fin_code
+            ).update(customer=instance)
+            Vehicle.objects.filter(customer_fin__iexact=instance.fin_code).update(
                 customer=instance
             )
-            Vehicle.objects.filter(customer_fin=instance.fin_code).update(
-                customer=instance
-            )
+        if instance.user_type == "2":
+            company = Company.objects.filter(
+                registration_number=instance.registration_number
+            ).last()
+            user = MyUser.objects.filter(pk=instance.pk).update(company=company)
 
             # company = Company.objects.filter(
             #     registration_number=instance.registration_number
             # ).last()
             # user = MyUser.objects.filter(pk=instance.pk).update(company=company)
     if instance.is_active and not instance.cache_is_staff and instance.is_staff:
-        if instance.user_type in ["2", "3"]:
+        if instance.user_type == "3":
             company = Company.objects.filter(
                 registration_number=instance.registration_number
             ).last()

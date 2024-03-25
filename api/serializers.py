@@ -11,6 +11,8 @@ from core.models import (
     CarRepairCompanyAgent,
     CarRepairCompanyOffer,
     CustomerUser,
+    InsurancePolicy,
+    OfferedServices,
     Vehicle,
 )
 from core.validator import (
@@ -191,6 +193,7 @@ class CarRepairCompanyAgentRegisterSerializer(RegisterBaseSerializer):
             "fin_code",
             "address",
             "phone_number",
+            "phone_prefix",
             "user_type",
             "registration_number",
         )
@@ -258,6 +261,12 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "username",
         )
+
+
+class OfferedServicesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OfferedServices
+        fields = "__all__"
 
 
 class VehicleSerializers(serializers.ModelSerializer):
@@ -357,6 +366,12 @@ class AccidentSerializers(serializers.ModelSerializer):
         return value
 
 
+class InsurancePolicySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InsurancePolicy
+        fields = "__all__"
+
+
 class AccidentBiddingSerializers(serializers.ModelSerializer):
     class Meta:
         model = AccidentBidding
@@ -364,6 +379,25 @@ class AccidentBiddingSerializers(serializers.ModelSerializer):
 
 
 class OfferSerializers(serializers.ModelSerializer):
+    services_to_provide = serializers.PrimaryKeyRelatedField(
+        queryset=OfferedServices.objects.all(), many=True
+    )
+
     class Meta:
         model = CarRepairCompanyOffer
         fields = "__all__"
+
+    def validate(self, data):
+        # Get the accident bidding from the data
+        accident_bidding = data.get("accident_bidding")
+
+        # Check if there is an existing offer for the same accident bidding
+        existing_offer = CarRepairCompanyOffer.objects.filter(
+            accident_bidding=accident_bidding
+        ).exists()
+        if existing_offer:
+            raise serializers.ValidationError(
+                "An offer already exists for this accident bidding."
+            )
+
+        return data

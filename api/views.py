@@ -14,6 +14,8 @@ from core.models import (
     CarRepairCompanyAgent,
     CarRepairCompanyOffer,
     CustomerUser,
+    InsurancePolicy,
+    OfferedServices,
     Vehicle,
 )
 
@@ -22,7 +24,9 @@ from .serializers import (
     AccidentSerializers,
     CarRepairCompanyAgentRegisterSerializer,
     CustomerRegisterSerializer,
+    InsurancePolicySerializer,
     LoginUserSerializer,
+    OfferedServicesSerializer,
     OfferSerializers,
     UserSerializer,
     VehicleSerializers,
@@ -91,6 +95,12 @@ class RegisterView(generics.CreateAPIView):
         return serializer_class
 
 
+class OfferedServicesListView(generics.ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = OfferedServicesSerializer
+    queryset = OfferedServices.objects.all()
+
+
 class VehicleListView(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = VehicleSerializers
@@ -132,8 +142,10 @@ class AccidentBiddingApiView(generics.ListAPIView):
     serializer_class = AccidentBiddingSerializers
 
     def get_queryset(self):
-        qs = AccidentBidding.objects.filter()
-        return qs
+        if self.request.user.user_type == "2":
+            return AccidentBidding.objects.all()
+        else:
+            return []
 
 
 class OfferListView(generics.ListCreateAPIView):
@@ -141,17 +153,25 @@ class OfferListView(generics.ListCreateAPIView):
     serializer_class = OfferSerializers
 
     def get_queryset(self):
-        qs = CarRepairCompanyOffer.objects.filter(offer_owner_agent=self.request.user)
+        qs = CarRepairCompanyOffer.objects.filter(offer_owner=self.request.user.company)
         return qs
 
     def create(self, request, *args, **kwargs):
         mutable_data = request.data.copy()
         mutable_data["offer_owner_agent"] = request.user.id
-        mutable_data["offer_owner"] = request.user
-        breakpoint()
+        mutable_data["offer_owner"] = request.user.company
         # if request.user:
         #     asset_data["customer"] = request.user
         serializer = self.serializer_class(data=mutable_data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class InsurancePolicyListView(generics.ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = InsurancePolicySerializer
+
+    def get_queryset(self):
+        queryset = InsurancePolicy.objects.filter(customer=self.request.user)
+        return queryset

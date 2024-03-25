@@ -259,12 +259,18 @@ class AgreementDocument(models.Model):
     car_repair_company = models.ForeignKey(
         CarRepairCompany, related_name="car_rep_company", on_delete=models.CASCADE
     )
-    car_repair_agent = models.ForeignKey(
-        CarRepairCompanyAgent, related_name="car_rep_agent", on_delete=models.CASCADE
-    )
+    # car_repair_agent = models.ForeignKey(
+    #     CarRepairCompanyAgent, related_name="car_rep_agent", on_delete=models.CASCADE
+    # )
     services_to_provide = models.ManyToManyField(OfferedServices)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+
+    def __str__(self):
+        return "{insurance_agent}-{car_repair_company}".format(
+            insurance_agent=self.insurance_agent,
+            car_repair_company=self.car_repair_company,
+        )
 
     class Meta:
         verbose_name = "Insurance & Car Companies Agreement Document "
@@ -326,16 +332,23 @@ class Accident(models.Model):
     accident_time = models.TimeField()
     location = models.CharField(max_length=255)
     description = models.TextField()
-    photos = models.ImageField(upload_to="uploads/")
+    # photos = models.ImageField(upload_to="uploads/")
 
     def __str__(self):
-        return "{customer}".format(
-            customer=self.customer,
+        return "{customer}||{insurance_policy}".format(
+            customer=self.customer, insurance_policy=self.insurance_policy
         )
 
     class Meta:
         verbose_name = "Accident"
         verbose_name_plural = "Accident"
+
+
+class AccidentPhoto(models.Model):
+    accident = models.ForeignKey(
+        Accident, related_name="photos", on_delete=models.CASCADE
+    )
+    photos = models.ImageField(upload_to="uploads/accident")
 
 
 class AccidentBidding(models.Model):
@@ -354,12 +367,6 @@ class AccidentBidding(models.Model):
     )
     start_date = models.DateField(_("Accident bidding start date"))
 
-    # submission_date = models.DateTimeField(auto_now_add=True)
-    # repair_start_date = models.DateTimeField()
-    # estimated_cost = models.DecimalField(max_digits=10, decimal_places=2)
-    # restoration_duration = models.DurationField()
-    # close_date = models.DateTimeField()
-    # winner = models.BooleanField()
     def __str__(self):
         return "{accident}".format(
             accident=self.accident,
@@ -368,6 +375,13 @@ class AccidentBidding(models.Model):
     class Meta:
         verbose_name = "Accident Bidding"
         verbose_name_plural = "Accident Bidding"
+
+
+class AccidentBiddingPhoto(models.Model):
+    accident = models.ForeignKey(
+        AccidentBidding, related_name="photos", on_delete=models.CASCADE
+    )
+    photos = models.ImageField(upload_to="uploads/bidding")
 
 
 class CarRepairCompanyOffer(models.Model):
@@ -382,8 +396,8 @@ class CarRepairCompanyOffer(models.Model):
     repair_start_date = models.DateTimeField()
     approximate_budget = models.PositiveIntegerField()
     approximate_duration = models.DurationField()
-    accepted_offer = models.BooleanField()
-    rejected_offer = models.BooleanField()
+    accepted_offer = models.BooleanField(default=False)
+    rejected_offer = models.BooleanField(default=False)
 
     def __str__(self):
         return "{offer_owner}".format(

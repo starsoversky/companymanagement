@@ -16,9 +16,7 @@ User = get_user_model()
 class PasswordValidator:
     def call(self, value):
         # Regular expression to check if the password contains at least one digit, one uppercase letter, and one special character
-        if not re.match(
-            r"^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%^&*()\-_=+{};:,<.>]).+$", value
-        ):
+        if not re.match(r"^(?=.*\d)(?=.*[A-Z])(?=.*[!@#$%/^&*()_+{}|:<>?]).*$", value):
             raise serializers.ValidationError(
                 "Password must include numbers, uppercase letters, and special characters."
             )
@@ -87,29 +85,15 @@ def validate_last_name(name, validation_err_key=None):
 
 
 def fincode_is_valid(fin_code):
-    fin_code_regex = r"^[<0-9a-zA-Z>]{quantifier}$"
-    fin_code_quantifier_map = {
-        "fin_code": "{7}",
-        # User.GOV_ID_PREFIX_AA: "{7}",
-        # User.GOV_ID_PREFIX_MYI: "{5,6}",
-        # User.GOV_ID_PREFIX_DYI: "{5,6}",
-    }
-
-    try:
-        regex_quantifier = fin_code_quantifier_map
-    except KeyError:
-        is_valid = False
-    else:
-        pattern = fin_code_regex.format(quantifier=regex_quantifier)
-        is_valid = bool(re.match(pattern, fin_code))
-
-    return is_valid
+    fin_code_regex = r"^[0-9a-zA-Z]{7}$"
+    return bool(re.match(fin_code_regex, fin_code))
 
 
 def validate_fincode(validated_data):
     fin_code = validated_data
     if not fincode_is_valid(fin_code):
         raise serializers.ValidationError(_("Please enter a valid FIN."))
+    return fin_code
 
 
 def validate_phone_number(phone_number, validation_err_key=None):
