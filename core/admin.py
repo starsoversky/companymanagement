@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
@@ -252,7 +253,13 @@ class AgreementDocumentAdmin(admin.ModelAdmin):
 
 @admin.register(CarRepairCompanyOffer)
 class CarRepairCompanyOfferAdmin(admin.ModelAdmin):
-    list_display = ("offer_owner", "offer_owner_agent", "accident_bidding")
+    list_display = (
+        "offer_owner",
+        "offer_owner_agent",
+        "accident_bidding",
+        "accepted_offer",
+        "rejected_offer",
+    )
     list_filter = (
         # AccidentBiddingFilter,
         "offer_owner__name",
@@ -261,6 +268,15 @@ class CarRepairCompanyOfferAdmin(admin.ModelAdmin):
         "rejected_offer",
         "accident_bidding__accident",
     )
+
+    def save_model(self, request, obj, form, change):
+        if obj.accepted_offer and obj.rejected_offer:
+            raise ValidationError(
+                {
+                    "error": "Accepted offer and Rejected offer fields cannot be True at the same time."
+                }
+            )
+        super().save_model(request, obj, form, change)
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)

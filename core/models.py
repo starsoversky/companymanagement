@@ -7,6 +7,7 @@ from django.contrib.auth.models import (
     UserManager,
 )
 from django.core import validators
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -24,11 +25,11 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         ("1", "050"),
         ("2", "051"),
         ("3", "077"),
-        ("3", "070"),
-        ("3", "055"),
-        ("3", "010"),
-        ("3", "099"),
-        ("3", "060"),
+        ("4", "070"),
+        ("5", "055"),
+        ("6", "010"),
+        ("7", "099"),
+        ("8", "060"),
     )
     user_type = models.CharField(
         max_length=1, choices=USER_TYPE_CHOICES, null=True, blank=True
@@ -318,7 +319,7 @@ class Vehicle(models.Model):
 
 class Accident(models.Model):
     customer = models.ForeignKey(
-        CustomerUser, on_delete=models.CASCADE, related_name="accident_cust"
+        CustomerUser, on_delete=models.SET_NULL, related_name="accident_cust", null=True
     )
     # asset = models.ForeignKey(
     #     Asset, related_name="asset_case", on_delete=models.CASCADE
@@ -343,10 +344,19 @@ class Accident(models.Model):
         verbose_name = "Accident"
         verbose_name_plural = "Accident"
 
+    def delete(self, *args, **kwargs):
+        # Handle deletion of related objects first
+        # self.acc_photos.all().delete()  # Assuming AccidentPhoto is related with ForeignKey
+        # self.accident_bidding.delete()  # Assuming AccidentBidding is related with OneToOneField
+        # self.appointment.delete()  # Assuming Appointment is related with OneToOneField
+
+        # Call the superclass method to delete the instance
+        super().delete(*args, **kwargs)
+
 
 class AccidentPhoto(models.Model):
     accident = models.ForeignKey(
-        Accident, related_name="photos", on_delete=models.CASCADE
+        Accident, related_name="acc_photos", on_delete=models.CASCADE
     )
     photos = models.ImageField(upload_to="uploads/accident")
 
@@ -361,9 +371,7 @@ class AccidentBidding(models.Model):
         related_name="acc_comp",
     )
     insurance_company_agent = models.ForeignKey(
-        InsuranceAgent,
-        on_delete=models.CASCADE,
-        related_name="acc_compag",
+        InsuranceAgent, on_delete=models.SET_NULL, related_name="acc_compag", null=True
     )
     services_to_provide = models.ManyToManyField(OfferedServices)
     start_date = models.DateField(_("Accident bidding start date"))
@@ -377,10 +385,20 @@ class AccidentBidding(models.Model):
         verbose_name = "Accident Bidding"
         verbose_name_plural = "Accident Bidding"
 
+    def delete(self, *args, **kwargs):
+        # Handle deletion of related objects first
+        # self.acc_photos.all().delete()  # Assuming AccidentPhoto is related with ForeignKey
+        # self.accident_bidding.delete()  # Assuming AccidentBidding is related with OneToOneField
+        # self.appointment.delete()  # Assuming Appointment is related with OneToOneField
+        # self.services_to_provide.all().clear()
+
+        # Call the superclass method to delete the instance
+        super().delete(*args, **kwargs)
+
 
 class AccidentBiddingPhoto(models.Model):
     accident = models.ForeignKey(
-        AccidentBidding, related_name="photos", on_delete=models.CASCADE
+        AccidentBidding, related_name="bidd_photos", on_delete=models.CASCADE
     )
     photos = models.ImageField(upload_to="uploads/bidding")
 
@@ -388,7 +406,7 @@ class AccidentBiddingPhoto(models.Model):
 class CarRepairCompanyOffer(models.Model):
     offer_owner = models.ForeignKey(CarRepairCompany, on_delete=models.CASCADE)
     offer_owner_agent = models.ForeignKey(
-        CarRepairCompanyAgent, on_delete=models.CASCADE
+        CarRepairCompanyAgent, on_delete=models.SET_NULL, null=True
     )
     accident_bidding = models.ForeignKey(
         AccidentBidding, on_delete=models.CASCADE, related_name="repair_offer"
@@ -405,9 +423,31 @@ class CarRepairCompanyOffer(models.Model):
             offer_owner=self.offer_owner,
         )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # cache current state of instance
+        self.cache_accepted_offer = self.accepted_offer
+        self.cache_rejected_offer = self.rejected_offer
+
     class Meta:
         verbose_name = "Car Repair Company Offer"
         verbose_name_plural = "Car Repair Company Offer"
+
+    def clean(self):
+        if self.accepted_offer and self.rejected_offer:
+            raise ValidationError(
+                "Accepted offer and Rejected offer fields cannot be True at the same time."
+            )
+
+    def delete(self, *args, **kwargs):
+        # Handle deletion of related objects first
+        # self.acc_photos.all().delete()  # Assuming AccidentPhoto is related with ForeignKey
+        # self.accident_bidding.delete()  # Assuming AccidentBidding is related with OneToOneField
+        # self.appointment.delete()  # Assuming Appointment is related with OneToOneField
+        # self.services_to_provide.all().clear()
+
+        # Call the superclass method to delete the instance
+        super().delete(*args, **kwargs)
 
 
 class Appointment(models.Model):

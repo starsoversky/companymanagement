@@ -8,6 +8,7 @@ from rest_framework.validators import UniqueValidator
 from core.models import (
     Accident,
     AccidentBidding,
+    AccidentPhoto,
     CarRepairCompanyAgent,
     CarRepairCompanyOffer,
     CustomerUser,
@@ -289,7 +290,15 @@ class VehicleSerializers(serializers.ModelSerializer):
         )
 
 
+class AccidentPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AccidentPhoto
+        fields = ("id", "photo")
+
+
 class AccidentSerializers(serializers.ModelSerializer):
+    photos = serializers.ListField(child=serializers.ImageField(), write_only=True)
+
     class Meta:
         model = Accident
         fields = (
@@ -364,6 +373,15 @@ class AccidentSerializers(serializers.ModelSerializer):
                 "The accident date cannot be in the future. Please enter a valid date."
             )
         return value
+
+    def create(self, validated_data):
+        photos_data = validated_data.pop("photos", [])
+        accident = Accident.objects.create(**validated_data)
+
+        for photo_data in photos_data:
+            AccidentPhoto.objects.create(accident=accident, photo=photo_data)
+
+        return accident
 
 
 class InsurancePolicySerializer(serializers.ModelSerializer):

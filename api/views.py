@@ -120,6 +120,51 @@ class VehicleListView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class VehicleDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = VehicleSerializers
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        qs = Vehicle.objects.filter(customer=self.request.user)
+
+        return qs
+
+    def get(self, request, *args, **kwargs):
+        try:
+            vehicle = self.get_object()
+            serializer = self.get_serializer(vehicle)
+            return Response(serializer.data)
+        except Vehicle.DoesNotExist:
+            return Response(
+                {"message": "Vehicle not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    def put(self, request, *args, **kwargs):
+        try:
+            vehicle = self.get_object()
+            serializer = self.get_serializer(vehicle, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        except Vehicle.DoesNotExist:
+            return Response(
+                {"message": "Vehicle not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            vehicle = self.get_object()
+            vehicle.delete()
+            return Response(
+                {"message": "Vehicle deleted successfully"},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except Vehicle.DoesNotExist:
+            return Response(
+                {"message": "Vehicle not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+
 class AccidentListView(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = AccidentSerializers
@@ -135,6 +180,50 @@ class AccidentListView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class AccidentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = AccidentSerializers
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        qs = Accident.objects.filter(customer=self.request.user)
+        return qs
+
+    def get(self, request, *args, **kwargs):
+        try:
+            accident = self.get_object()
+            serializer = self.get_serializer(accident)
+            return Response(serializer.data)
+        except Accident.DoesNotExist:
+            return Response(
+                {"message": "Accident not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    def put(self, request, *args, **kwargs):
+        try:
+            accident = self.get_object()
+            serializer = self.get_serializer(accident, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        except Accident.DoesNotExist:
+            return Response(
+                {"message": "Accident not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            accident = self.get_object()
+            accident.delete()
+            return Response(
+                {"message": "Accident deleted successfully"},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except Accident.DoesNotExist:
+            return Response(
+                {"message": "Accident not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class AccidentBiddingApiView(generics.ListAPIView):
@@ -166,6 +255,50 @@ class OfferListView(generics.ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = OfferSerializers
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        qs = CarRepairCompanyOffer.objects.filter(offer_owner=self.request.user.company)
+        return qs
+
+    def get(self, request, *args, **kwargs):
+        try:
+            offer = self.get_object()
+            serializer = self.get_serializer(offer)
+            return Response(serializer.data)
+        except CarRepairCompanyOffer.DoesNotExist:
+            return Response(
+                {"message": "Offer not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    def put(self, request, *args, **kwargs):
+        try:
+            offer = self.get_object()
+            serializer = self.get_serializer(offer, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+        except CarRepairCompanyOffer.DoesNotExist:
+            return Response(
+                {"message": "Offer not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            offer = self.get_object()
+            offer.delete()
+            return Response(
+                {"message": "Offer deleted successfully"},
+                status=status.HTTP_204_NO_CONTENT,
+            )
+        except Offer.DoesNotExist:
+            return Response(
+                {"message": "Offer not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
 
 class InsurancePolicyListView(generics.ListAPIView):
