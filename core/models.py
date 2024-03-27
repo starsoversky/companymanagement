@@ -457,9 +457,9 @@ class CarRepairCompanyOffer(models.Model):
 
 class Appointment(models.Model):
     STATUS = (
-        ("A", "in progress"),
-        ("B", "finished"),
-        ("C", "scheduled"),
+        ("1", "in progress"),
+        ("2", "finished"),
+        ("3", "scheduled"),
     )
     accident_bidding = models.OneToOneField(
         AccidentBidding,

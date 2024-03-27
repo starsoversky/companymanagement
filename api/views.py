@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from core.models import (
     Accident,
     AccidentBidding,
+    Appointment,
     CarRepairCompanyAgent,
     CarRepairCompanyOffer,
     CustomerUser,
@@ -22,6 +23,7 @@ from core.models import (
 from .serializers import (
     AccidentBiddingSerializers,
     AccidentSerializers,
+    AppointmentSerializer,
     CarRepairCompanyAgentRegisterSerializer,
     CustomerRegisterSerializer,
     InsurancePolicySerializer,
@@ -307,4 +309,13 @@ class InsurancePolicyListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = InsurancePolicy.objects.filter(customer=self.request.user)
+        return queryset
+
+
+class AppointmentListView(generics.ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = AppointmentSerializer
+
+    def get_queryset(self):
+        queryset = Appointment.objects.filter(customer=self.request.user)
         return queryset

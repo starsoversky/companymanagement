@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+import os
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -110,15 +110,17 @@ REST_FRAMEWORK = {
 
 WSGI_APPLICATION = "project.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(BASE_DIR / "db.sqlite3"),
-    }
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "project_db_name",
+        "USER": "project_db_user",
+        "PASSWORD": "6NwpPtvGyCsMLAKDZtazEP",
+        "HOST": "localhost",
+        "PORT": 5432,
+    },
 }
 
 
@@ -154,7 +156,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-import os
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/

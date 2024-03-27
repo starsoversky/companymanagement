@@ -1,6 +1,23 @@
 version: '3'
 
 services:
+
+  postgres:
+    container_name:  postgres_proj
+    image:           postgres:11
+    ports:
+      - 5432:5432 # Bind host port 5432 to PostgreSQL port 5432
+    volumes:
+      - ../pgdb:/var/lib/postgresql/data
+#      - ../_backup/backup_defaultdb_06-Jan-2020.pgsql:/docker-entrypoint-initdb.d/restore.sql
+    # env_file: .venv
+    environment:
+      - POSTGRES_DB=project_db_name
+      - POSTGRES_USER=project_db_user
+      - POSTGRES_PASSWORD=6NwpPtvGyCsMLAKDZtazEP
+      - POSTGRES_HOST=postgres
+      - LC_ALL=C.UTF-8
+
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
@@ -8,4 +25,10 @@ services:
       - .:/code
     ports:
       - "8000:8000"
-      
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db/postgres
+
+# volumes:
+#   postgres_data:

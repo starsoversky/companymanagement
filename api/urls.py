@@ -4,6 +4,7 @@ from .views import (
     AccidentBiddingApiView,
     AccidentDetailView,
     AccidentListView,
+    AppointmentListView,
     InsurancePolicyListView,
     LoginView,
     LogoutView,
@@ -33,4 +34,5 @@ urlpatterns = [
     path("offer/<int:pk>/", OfferDetailView.as_view(), name="offer-detail"),
     path("inpolicy/", InsurancePolicyListView.as_view(), name="insurance-policy-list"),
     path("offservices/", OfferedServicesListView.as_view(), name="offered-list"),
+    path("appointment/", AppointmentListView.as_view(), name="appointment-list"),
 ]
