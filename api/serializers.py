@@ -379,8 +379,7 @@ class AccidentSerializers(serializers.ModelSerializer):
         accident = Accident.objects.create(**validated_data)
 
         for photo_data in photos_data:
-            AccidentPhoto.objects.create(accident=accident, photo=photo_data)
-
+            AccidentPhoto.objects.create(accident=accident, photos=photo_data)
         return accident
 
 

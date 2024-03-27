@@ -349,6 +349,7 @@ class Accident(models.Model):
         # self.acc_photos.all().delete()  # Assuming AccidentPhoto is related with ForeignKey
         # self.accident_bidding.delete()  # Assuming AccidentBidding is related with OneToOneField
         # self.appointment.delete()  # Assuming Appointment is related with OneToOneField
+        # self.services_to_provide.all().clear()
 
         # Call the superclass method to delete the instance
         super().delete(*args, **kwargs)
@@ -387,6 +388,7 @@ class AccidentBidding(models.Model):
 
     def delete(self, *args, **kwargs):
         # Handle deletion of related objects first
+        self.repair_offer.all().delete()
         # self.acc_photos.all().delete()  # Assuming AccidentPhoto is related with ForeignKey
         # self.accident_bidding.delete()  # Assuming AccidentBidding is related with OneToOneField
         # self.appointment.delete()  # Assuming Appointment is related with OneToOneField
@@ -423,11 +425,12 @@ class CarRepairCompanyOffer(models.Model):
             offer_owner=self.offer_owner,
         )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # cache current state of instance
-        self.cache_accepted_offer = self.accepted_offer
-        self.cache_rejected_offer = self.rejected_offer
+    # @classmethod
+    # def from_db(cls, db, field_names, values):
+    #     instance = super().from_db(db, field_names, values)
+    #     instance._cache_accepted_offer = instance.accepted_offer
+    #     instance._cache_rejected_offer = instance.rejected_offer
+    #     return instance
 
     class Meta:
         verbose_name = "Car Repair Company Offer"
@@ -436,7 +439,9 @@ class CarRepairCompanyOffer(models.Model):
     def clean(self):
         if self.accepted_offer and self.rejected_offer:
             raise ValidationError(
-                "Accepted offer and Rejected offer fields cannot be True at the same time."
+                {
+                    "rejected_offer": "Accepted offer and Rejected offer fields cannot be True at the same time."
+                }
             )
 
     def delete(self, *args, **kwargs):

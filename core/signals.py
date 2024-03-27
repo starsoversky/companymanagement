@@ -34,8 +34,11 @@ def add_doc_vehicle(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=CarRepairCompanyOffer, dispatch_uid="offer")
 def select_offer(sender, instance, created, **kwargs):
-    if not instance.cache_accepted_offer and instance.accepted_offer:
-        CarRepairCompanyOffer.objects.filter(
-            accident_bidding=instance.accident_bidding
-        ).exclude(id=instance.id).update(rejected_offer=True, accepted_offer=False)
-    pass
+    if not created:
+        if instance.accepted_offer:
+            CarRepairCompanyOffer.objects.filter(
+                accident_bidding=instance.accident_bidding
+            ).exclude(id=instance.id).update(rejected_offer=True, accepted_offer=False)
+
+
+# not instance._cache_accepted_offer and
