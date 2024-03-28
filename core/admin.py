@@ -44,6 +44,7 @@ class MyUserAdmin(UserAdmin):
             _("Permissions"),
             {
                 "fields": (
+                    "email_is_verified",
                     "is_active",
                     "is_staff",
                     "is_superuser",

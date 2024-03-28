@@ -61,6 +61,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         _("email address"), max_length=255, unique=True, db_index=True
     )
+    email_is_verified = models.BooleanField(default=False)
     fin_code = models.CharField(_("FIN"), max_length=100, unique=True)
     registration_number = models.CharField(
         max_length=255, unique=True, blank=True, null=True

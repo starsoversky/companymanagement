@@ -1,9 +1,15 @@
 import django.core.exceptions as django_exceptions
+from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 
 from core.models import (
     Accident,
@@ -31,13 +37,6 @@ from django.contrib.auth.password_validation import validate_password
 
 
 class RegisterBaseSerializer(serializers.ModelSerializer):
-    # email = serializers.EmailField(
-    #     required=True, validators=[UniqueValidator(queryset=CustomerUser.objects.all())]
-    # )
-
-    # password = serializers.CharField(
-    #     write_only=True, required=True, validators=[validate_password]
-    # )
 
     class Meta:
         model = CustomerUser
@@ -176,7 +175,36 @@ class RegisterBaseSerializer(serializers.ModelSerializer):
         user = self.Meta.model(**self.validated_data)
         user.is_active = False  # We did not eliminate is_active false for this reason ---https://stackoverflow.com/a/15122938/819982
         user.save()
+        # Generate email confirmation token
+        token = default_token_generator.make_token(user)
+
+        # Send confirmation email
+        self.send_confirmation_email(user, token)
         return user
+
+    def send_confirmation_email(self, user, token):
+        current_site = get_current_site(self.context["request"])
+        domain = current_site.domain
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+        subject = "Activate your account"
+        message = render_to_string(
+            "confirmation_email.html",
+            {
+                "user": user,
+                "domain": domain,
+                "uid": uid,
+                "token": token,
+            },
+        )
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[
+                user,
+            ],
+        )
 
 
 class CustomerRegisterSerializer(RegisterBaseSerializer):

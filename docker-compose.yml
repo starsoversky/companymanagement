@@ -6,7 +6,7 @@ services:
     container_name:  postgres_proj
     image:           postgres:11
     ports:
-      - 5432:5432 # Bind host port 5432 to PostgreSQL port 5432
+      - 5433:5433 # Bind host port 5432 to PostgreSQL port 5432
     volumes:
       - ../pgdb:/var/lib/postgresql/data
 #      - ../_backup/backup_defaultdb_06-Jan-2020.pgsql:/docker-entrypoint-initdb.d/restore.sql

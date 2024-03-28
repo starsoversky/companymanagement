@@ -19,6 +19,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from core.views import activate_account
+
 urlpatterns = [
     # Django JET URLS
     path("jet/", include("jet.urls", "jet")),
@@ -26,6 +28,7 @@ urlpatterns = [
     path("jet/dashboard/", include("jet.dashboard.urls", "jet-dashboard")),
     path("admin/", admin.site.urls),
     path("api/", include("api.urls", "api")),
+    path("activate/<uidb64>/<token>/", activate_account, name="activate"),
 ]
 
 if settings.DEBUG:
