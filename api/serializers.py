@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage, send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -15,6 +15,7 @@ from core.models import (
     Accident,
     AccidentBidding,
     AccidentPhoto,
+    AgreementDocument,
     Appointment,
     CarRepairCompanyAgent,
     CarRepairCompanyOffer,
@@ -197,14 +198,15 @@ class RegisterBaseSerializer(serializers.ModelSerializer):
                 "token": token,
             },
         )
-        send_mail(
+
+        email = EmailMessage(
             subject=subject,
-            message=message,
+            body=message,  # HTML content
             from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[
-                user,
-            ],
+            to=[user.email],
         )
+        email.content_subtype = "html"  # Set content type to HTML
+        email.send()
 
 
 class CustomerRegisterSerializer(RegisterBaseSerializer):
@@ -421,6 +423,12 @@ class InsurancePolicySerializer(serializers.ModelSerializer):
 class AccidentBiddingSerializers(serializers.ModelSerializer):
     class Meta:
         model = AccidentBidding
+        fields = "__all__"
+
+
+class AgreementDocumentSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = AgreementDocument
         fields = "__all__"
 
 

@@ -387,6 +387,9 @@ class AccidentBidding(models.Model):
         verbose_name = "Accident Bidding"
         verbose_name_plural = "Accident Bidding"
 
+    def accepted_offers(self):
+        return self.repair_offer.filter(accepted_offer=True).first()
+
     def delete(self, *args, **kwargs):
         # Handle deletion of related objects first
         self.repair_offer.all().delete()

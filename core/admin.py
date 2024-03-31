@@ -122,6 +122,16 @@ class CarRepairCompanyAdmin(admin.ModelAdmin):
 class InsurancePolicyAdmin(admin.ModelAdmin):
     readonly_fields = ("insurance_agent",)
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if request.user.is_staff and not request.user.is_superuser:
+            if request.user.user_type == "3":  # Assuming '3' represents Insurance Agent
+                # Get the insurance policies associated with the Insurance Agent's company
+                queryset = InsurancePolicy.objects.filter(
+                    insurance_company=request.user.company
+                )
+        return queryset
+
     def save_model(self, request, obj, form, change):
         if obj:
             obj.insurance_agent = request.user
@@ -152,6 +162,16 @@ class InsurancePolicyAdmin(admin.ModelAdmin):
 
 @admin.register(Vehicle)
 class VehicleAdmin(admin.ModelAdmin):
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if request.user.is_staff and not request.user.is_superuser:
+            if request.user.user_type == "3":  # Assuming '3' represents Insurance Agent
+                # Get the insurance policies associated with the Insurance Agent's company
+                queryset = Vehicle.objects.filter(
+                    insurance_policy__insurance_company=request.user.company
+                )
+        return queryset
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if not request.user.is_superuser:
@@ -209,9 +229,11 @@ class AccidentBiddingAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if obj and not request.user.is_superuser:
-            obj.insurance_company_agent = request.user
-            if request.user.company:
-                obj.insurance_company_id = request.user.company.id
+            if request.user.user_type == "3":
+                obj.insurance_company_agent = request.user
+                if request.user.company:
+
+                    obj.insurance_company_id = request.user.company.id
         super().save_model(request, obj, form, change)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -227,12 +249,6 @@ class AccidentBiddingAdmin(admin.ModelAdmin):
             #         id=request.user.company.id
             #     )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-    def accepted_offers(self, obj):
-        if obj:
-            return obj.repair_offer.filter(accepted_offer=True).first()
-        else:
-            return ""
 
 
 @admin.register(Appointment)

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.signals import user_logged_out
+from django.db.models import Prefetch
 from knox.auth import TokenAuthentication
 from knox.models import AuthToken
 from rest_framework import generics, permissions, status
@@ -11,6 +12,7 @@ from rest_framework.views import APIView
 from core.models import (
     Accident,
     AccidentBidding,
+    AgreementDocument,
     Appointment,
     CarRepairCompanyAgent,
     CarRepairCompanyOffer,
@@ -23,6 +25,7 @@ from core.models import (
 from .serializers import (
     AccidentBiddingSerializers,
     AccidentSerializers,
+    AgreementDocumentSerializers,
     AppointmentSerializer,
     CarRepairCompanyAgentRegisterSerializer,
     CustomerRegisterSerializer,
@@ -234,9 +237,15 @@ class AccidentBiddingApiView(generics.ListAPIView):
 
     def get_queryset(self):
         if self.request.user.user_type == "2":
-            return AccidentBidding.objects.all()
+            qs = AccidentBidding.objects.prefetch_related(
+                Prefetch(
+                    "repair_offer",
+                    queryset=CarRepairCompanyOffer.objects.filter(accepted_offer=True),
+                )
+            )
+            return qs
         else:
-            return []
+            return ""
 
 
 class OfferListView(generics.ListCreateAPIView):
@@ -297,7 +306,7 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
                 {"message": "Offer deleted successfully"},
                 status=status.HTTP_204_NO_CONTENT,
             )
-        except Offer.DoesNotExist:
+        except CarRepairCompanyOffer.DoesNotExist:
             return Response(
                 {"message": "Offer not found"}, status=status.HTTP_404_NOT_FOUND
             )
@@ -309,6 +318,17 @@ class InsurancePolicyListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = InsurancePolicy.objects.filter(customer=self.request.user)
+        return queryset
+
+
+class AgreementDocumentListView(generics.ListAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = AgreementDocumentSerializers
+
+    def get_queryset(self):
+        queryset = AgreementDocument.objects.filter(
+            car_repair_company=self.request.user.company
+        )
         return queryset
 
 
