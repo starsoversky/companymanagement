@@ -127,3 +127,15 @@ def validate_phone_number(phone_number, validation_err_key=None):
         raise serializers.ValidationError(validatation_errors)
 
     return phone_number
+
+
+def validate_phone_prefix(phone_prefix):
+    permitted_prefixes = {"050", "051", "077", "070", "055", "010", "099", "060"}
+
+    if not phone_prefix.startswith("0"):
+        raise serializers.ValidationError("Phone prefix must start with '0'.")
+    if phone_prefix not in permitted_prefixes:
+        raise serializers.ValidationError(
+            f"The phone prefix '{phone_prefix}' is not permitted."
+        )
+    return phone_prefix

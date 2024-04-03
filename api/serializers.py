@@ -30,6 +30,7 @@ from core.validator import (
     validate_last_name,
     validate_person_name,
     validate_phone_number,
+    validate_phone_prefix,
 )
 
 User = get_user_model()
@@ -159,6 +160,9 @@ class RegisterBaseSerializer(serializers.ModelSerializer):
 
     def validate_phone_number(self, phone_number):
         return validate_phone_number(phone_number)
+
+    def validate_phone_prefix(self, phone_prefix):
+        return validate_phone_prefix(phone_prefix)
 
     def save(self):
         """Serializer save, which pops unnecessary info from

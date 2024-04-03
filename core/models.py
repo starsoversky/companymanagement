@@ -21,16 +21,6 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         ("2", "Car Repair Company Agent"),
         ("3", "Insurance Agent"),
     )
-    PHONEPREFIX = (
-        ("1", "050"),
-        ("2", "051"),
-        ("3", "077"),
-        ("4", "070"),
-        ("5", "055"),
-        ("6", "010"),
-        ("7", "099"),
-        ("8", "060"),
-    )
     user_type = models.CharField(
         max_length=1, choices=USER_TYPE_CHOICES, null=True, blank=True
     )
@@ -67,7 +57,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
         max_length=255, unique=True, blank=True, null=True
     )
     address = models.CharField(max_length=100)
-    phone_prefix = models.CharField(choices=PHONEPREFIX, max_length=3)
+    phone_prefix = models.CharField(max_length=3)
     phone_number = models.CharField(max_length=20)
     is_staff = models.BooleanField(
         _("staff status"),
