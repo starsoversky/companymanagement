@@ -20,6 +20,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 Mb limit
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-s^i&iepk**4j8wip&n0^5#!4_+*xpp#5ie%8sn@@20zeqdih-#"
 
@@ -42,6 +44,7 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
@@ -118,13 +121,14 @@ WSGI_APPLICATION = "project.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "db_name",
-        "USER": "postgres",
-        "PASSWORD": "password",
+        "NAME": "project_db_name",
+        "USER": "project_db_user",
+        "PASSWORD": "6NwpPtvGyCsMLAKDZtazEP",
         "HOST": "postgres",
         "PORT": "5432",
     }
 }
+
 
 # DATABASES = {
 #     "default": {

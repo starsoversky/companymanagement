@@ -213,6 +213,39 @@ class RegisterBaseSerializer(serializers.ModelSerializer):
         email.send()
 
 
+class CustomerProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerUser
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "address",
+            "phone_prefix",
+            "phone_number",
+            "user_type",
+            "registration_number",
+        )
+
+
+class CarRepairAgentProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarRepairCompanyAgent
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "address",
+            "phone_prefix",
+            "phone_number",
+            "user_type",
+            "registration_number",
+            "company",
+        )
+
+
 class CustomerRegisterSerializer(RegisterBaseSerializer):
     class Meta(RegisterBaseSerializer.Meta):
         pass
@@ -270,10 +303,10 @@ class LoginUserSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         email = value.lower()
-        if not User.objects.filter(email=email).exists():
-            raise serializers.ValidationError(
-                "The email address you entered does not match our records."
-            )
+        # if not User.objects.filter(email=email).exists():
+        #     raise serializers.ValidationError(
+        #         "The email address you entered does not match our records."
+        #     )
         if User.objects.filter(email=email, is_active=False).exists():
             raise serializers.ValidationError(
                 "Your account is not active. Please check your email for the activation notification or contact your insurance provider."
@@ -286,17 +319,13 @@ class LoginUserSerializer(serializers.Serializer):
         if user:
             # and user.is_active and user.is_staff:
             return user
-        raise serializers.ValidationError("The password you entered is incorrect.")
+        raise serializers.ValidationError("Credentials are incorrect.")
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = (
-            "id",
-            "email",
-            "username",
-        )
+        fields = ("id", "email", "username", "user_type")
 
 
 class OfferedServicesSerializer(serializers.ModelSerializer):
@@ -337,6 +366,7 @@ class AccidentSerializers(serializers.ModelSerializer):
     class Meta:
         model = Accident
         fields = (
+            "id",
             "customer",
             "insurance_policy",
             "accident_date",
@@ -387,6 +417,16 @@ class AccidentSerializers(serializers.ModelSerializer):
                 "allow_null": False,
             },
         }
+
+    def get_photos(self, obj):
+        photos_queryset = obj.acc_photos.all()
+        return [photo.photos.url for photo in photos_queryset]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        photos_data = self.get_photos(instance)
+        data["photos"] = photos_data
+        return data
 
     def validate_location(self, value):
         if len(value) < 10:

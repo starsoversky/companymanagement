@@ -225,6 +225,7 @@ class InsurancePolicy(models.Model):
     insurance_agent = models.ForeignKey(
         InsuranceAgent, related_name="insurance_agent", on_delete=models.CASCADE
     )
+    contract_number = models.CharField(max_length=100)
     customer_fin = models.CharField(_("Customer FIN"), max_length=100)
     coverage_plan = models.CharField(max_length=100)
     coverage_type = models.CharField(max_length=100)
@@ -315,7 +316,7 @@ class Accident(models.Model):
     # asset = models.ForeignKey(
     #     Asset, related_name="asset_case", on_delete=models.CASCADE
     # )
-    insurance_policy = models.OneToOneField(
+    insurance_policy = models.ForeignKey(
         InsurancePolicy,
         on_delete=models.CASCADE,
         related_name="accident_doc",

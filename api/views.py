@@ -27,7 +27,9 @@ from .serializers import (
     AccidentSerializers,
     AgreementDocumentSerializers,
     AppointmentSerializer,
+    CarRepairAgentProfileSerializer,
     CarRepairCompanyAgentRegisterSerializer,
+    CustomerProfileSerializer,
     CustomerRegisterSerializer,
     InsurancePolicySerializer,
     LoginUserSerializer,
@@ -98,6 +100,16 @@ class RegisterView(generics.CreateAPIView):
         )
 
         return serializer_class
+
+
+class CustomerProfileAPIView(generics.RetrieveAPIView):
+    queryset = CustomerUser.objects.all()
+    serializer_class = CustomerProfileSerializer
+
+
+class CarRepairAgentProfileAPIView(generics.RetrieveAPIView):
+    queryset = CarRepairCompanyAgent.objects.all()
+    serializer_class = CarRepairAgentProfileSerializer
 
 
 class OfferedServicesListView(generics.ListAPIView):

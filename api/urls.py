@@ -6,6 +6,8 @@ from .views import (
     AccidentListView,
     AgreementDocumentListView,
     AppointmentListView,
+    CarRepairAgentProfileAPIView,
+    CustomerProfileAPIView,
     InsurancePolicyListView,
     LoginView,
     LogoutView,
@@ -24,6 +26,16 @@ urlpatterns = [
     # Knox authentication Logout system
     path("logout/", LogoutView.as_view(), name="logout"),
     path("register/", RegisterView.as_view(), name="auth_register"),
+    path(
+        "profiles/customer/<int:pk>/",
+        CustomerProfileAPIView.as_view(),
+        name="customer-profile",
+    ),
+    path(
+        "profiles/agent/<int:pk>/",
+        CarRepairAgentProfileAPIView.as_view(),
+        name="car-repair-agent-profile",
+    ),
     path("vehicle/", VehicleListView.as_view(), name="vehicle-list"),
     path("vehicle/<int:pk>/", VehicleDetailView.as_view(), name="vehicle-detail"),
     path("accident/", AccidentListView.as_view(), name="accident-list"),
